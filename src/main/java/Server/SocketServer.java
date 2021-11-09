@@ -1,3 +1,5 @@
+package Server;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -17,7 +19,7 @@ public class SocketServer {
     private String startServ = "сервер запустился..\r\n";
     private String disconnect = "отключился..\r\n";
     private Charset charset = Charset.forName("UTF-8");
-    private String FILE_PATH = "src\\main\\java\\file.log";
+    private String FILE_PATH = "src\\main\\java\\Server\\file.log";
     private ByteBuffer byteBuffer = ByteBuffer.allocate(1024 * 16);
 
     public SocketServer(String host, int port) {
