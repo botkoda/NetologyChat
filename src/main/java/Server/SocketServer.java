@@ -56,9 +56,9 @@ public class SocketServer {
         try {
             SocketChannel channel = serverSocketChannel.accept();
             channel.configureBlocking(false);
-            channel.register(this.selector, SelectionKey.OP_READ);
-            this.session.add(channel);
-            sendMessageHistory(channel);
+            channel.register(selector, SelectionKey.OP_READ);
+            session.add(channel);
+            sendMessageHistory(channel,FILE_PATH);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -69,15 +69,15 @@ public class SocketServer {
         SocketChannel channel = (SocketChannel) key.channel();
         try {
             int num = channel.read(byteBuffer);
-            byteBuffer.flip();
-            String stringByteBuffer = new String(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
             if (num == -1) {
-                this.session.remove(channel);
+                session.remove(channel);
                 message(disconnect);
                 channel.close();
                 key.cancel();
                 return;
             } else {
+                byteBuffer.flip();
+                String stringByteBuffer = new String(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
                 message(stringByteBuffer);
                 byteBuffer.clear();
             }
@@ -88,26 +88,30 @@ public class SocketServer {
     }
 
     private void message(String s) {
-        try {
-            FileChannel input = FileChannel.open(Paths.get(FILE_PATH), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-            input.write(ByteBuffer.wrap((s).getBytes(charset)));
-            input.close();
-            byteBuffer.flip();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        this.session.forEach(socketChannel -> {
+        writeToFile(s, FILE_PATH);
+        session.forEach(socketChannel -> {
             try {
                 socketChannel.write(ByteBuffer.wrap(s.getBytes(charset)));
-                byteBuffer.flip();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
     }
 
+    public boolean writeToFile(String s, String FILE_PATH) {
+        try {
+            FileChannel input = FileChannel.open(Paths.get(FILE_PATH), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+            input.write(ByteBuffer.wrap(s.getBytes(charset)));
+            input.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     //отправка истории сообщений при подключении клиента
-    private void sendMessageHistory(SocketChannel channel) {
+    public ByteBuffer sendMessageHistory(SocketChannel channel,String FILE_PATH) {
         try {
             FileChannel output = FileChannel.open(Paths.get(FILE_PATH), StandardOpenOption.READ);
             byteBuffer.clear();
@@ -120,6 +124,7 @@ public class SocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return byteBuffer;
     }
 
 }

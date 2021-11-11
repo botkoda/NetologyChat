@@ -56,9 +56,9 @@ public class SocketClient {
         SocketChannel client = (SocketChannel) key.channel();
         if (client.isConnectionPending()) {
             client.finishConnect();
-            new Thread(new UserInputHander(this)).start();
-            clientSocketChannel.configureBlocking(false);
+            new Thread(new UserInput(this)).start();
             FileChannel.open(Paths.get(FILE_PATH), StandardOpenOption.WRITE).truncate(0).close();
+            clientSocketChannel.configureBlocking(false);
         }
         client.register(this.selector, SelectionKey.OP_READ);
     }
@@ -66,19 +66,17 @@ public class SocketClient {
 
     private void read(SelectionKey key) {
         try {
-            FileChannel input = FileChannel.open(Paths.get(FILE_PATH), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
             SocketChannel clientSocketChannel = (SocketChannel) key.channel();
             byteBuffer.clear();
             int num = clientSocketChannel.read(byteBuffer);
-            byteBuffer.flip();
-            String msg = new String(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
-            input.write(ByteBuffer.wrap(msg.getBytes(charset)));
             if (num == -1) {
                 clientSocketChannel.close();
                 key.cancel();
-                input.close();
                 return;
             } else {
+                byteBuffer.flip();
+                String msg = new String(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
+                writeToFile(msg,FILE_PATH);
                 System.out.println(msg);
                 byteBuffer.clear();
             }
@@ -88,21 +86,37 @@ public class SocketClient {
 
     }
 
-    public void send(String dateTime, String name, String msg) throws Exception {
-        if (msg.isEmpty()) {
-            return;
+    public boolean writeToFile(String s, String FILE_PATH) {
+        try {
+            FileChannel input = FileChannel.open(Paths.get(FILE_PATH), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+            input.write(ByteBuffer.wrap(s.getBytes(charset)));
+            input.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
-        byteBuffer.clear();
-        byteBuffer.put(charset.encode(dateTime + " " + name + ": " + msg + "\r\n"));
-        byteBuffer.flip();
-        //while (byteBuffer.hasRemaining()) {
-        clientSocketChannel.write(byteBuffer);
-        //  }
-        byteBuffer.clear();
+    }
 
-        if (readyToQuit(msg)) {
-            clientSocketChannel.close();
-            selector.close();
+
+    public ByteBuffer readyToSend(String msg) throws Exception {
+        byteBuffer.clear();
+        byteBuffer.put(charset.encode(msg));
+        byteBuffer.flip();
+
+        return byteBuffer;
+    }
+
+    void write(String dateTime, String name, String msg){
+        try {
+            byteBuffer=readyToSend(dateTime + " " + name + ": " + msg + "\r\n");
+            clientSocketChannel.write(byteBuffer);
+            if (readyToQuit(msg)) {
+                clientSocketChannel.close();
+                selector.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
