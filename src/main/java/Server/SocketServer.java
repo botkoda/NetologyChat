@@ -5,12 +5,13 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
 
 public class SocketServer {
     private Selector selector;
@@ -29,6 +30,10 @@ public class SocketServer {
 
     public void start() {
         try {
+            Path newFilePath = Paths.get(FILE_PATH);
+            if (!Files.exists(newFilePath)) {
+                Files.createFile(newFilePath);
+            }
             this.selector = Selector.open();
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.bind(address);
@@ -58,12 +63,11 @@ public class SocketServer {
             channel.configureBlocking(false);
             channel.register(selector, SelectionKey.OP_READ);
             session.add(channel);
-            sendMessageHistory(channel,FILE_PATH);
+            sendMessageHistory(channel, FILE_PATH);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
     private void read(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
@@ -110,8 +114,7 @@ public class SocketServer {
         }
     }
 
-    //отправка истории сообщений при подключении клиента
-    public ByteBuffer sendMessageHistory(SocketChannel channel,String FILE_PATH) {
+    public ByteBuffer sendMessageHistory(SocketChannel channel, String FILE_PATH) {
         try {
             FileChannel output = FileChannel.open(Paths.get(FILE_PATH), StandardOpenOption.READ);
             byteBuffer.clear();
@@ -126,5 +129,4 @@ public class SocketServer {
         }
         return byteBuffer;
     }
-
 }
