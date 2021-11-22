@@ -88,7 +88,6 @@ public class SocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private void message(String s) {
