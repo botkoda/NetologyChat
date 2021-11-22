@@ -10,7 +10,6 @@ public class Config {
     public static String HOST;
     public static int PORT;
 
-
     static {
         Properties properties = new Properties();
         FileInputStream propertiesFile = null;
