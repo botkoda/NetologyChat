@@ -1,7 +1,5 @@
 package Client;
 
-
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -22,7 +20,6 @@ public class UserInput implements Runnable {
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println(forName);
             name = scanner.nextLine();
-
             System.out.println(msg);
             while (true) {
                 String dateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM).format(LocalDateTime.now());
