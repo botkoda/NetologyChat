@@ -29,7 +29,7 @@ public class SocketClient {
     public void start() {
         try {
             Path newFilePath = Paths.get(FILE_PATH);
-            if(!Files.exists(newFilePath)){
+            if (!Files.exists(newFilePath)) {
                 Files.createFile(newFilePath);
             }
             clientSocketChannel = SocketChannel.open();
@@ -88,7 +88,6 @@ public class SocketClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public boolean writeToFile(String s, String FILE_PATH) {
@@ -107,7 +106,6 @@ public class SocketClient {
         byteBuffer.clear();
         byteBuffer.put(charset.encode(msg));
         byteBuffer.flip();
-
         return byteBuffer;
     }
 
@@ -127,5 +125,4 @@ public class SocketClient {
     public boolean readyToQuit(String msg) {
         return QUIT.equals(msg);
     }
-
 }
