@@ -18,20 +18,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SocketClientTest {
     SocketClient socketClient = new SocketClient(Config.HOST, Config.PORT);
-    String s="тест";
-    String path_name="test.txt";
+    String s = "тест";
+    String path_name = "test.txt";
 
     @Test
     void writeToFile() throws IOException {
         Path newFilePath = Paths.get(path_name);
         Files.deleteIfExists(newFilePath);
         Files.createFile(newFilePath);
-        assertTrue(socketClient.writeToFile(s,path_name));
+        assertTrue(socketClient.writeToFile(s, path_name));
     }
 
     @Test
     void send() throws Exception {
-        ByteBuffer byteBuffer= socketClient.readyToSend(s);
+        ByteBuffer byteBuffer = socketClient.readyToSend(s);
         String result = new String(byteBuffer.array(), 0, byteBuffer.limit());
         assertEquals(s, result);
 
@@ -42,5 +42,4 @@ class SocketClientTest {
         String ex = "/exit";
         assertTrue(socketClient.readyToQuit(ex));
     }
-
 }
