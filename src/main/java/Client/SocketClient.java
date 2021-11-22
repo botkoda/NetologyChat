@@ -5,6 +5,8 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
@@ -26,6 +28,10 @@ public class SocketClient {
 
     public void start() {
         try {
+            Path newFilePath = Paths.get(FILE_PATH);
+            if(!Files.exists(newFilePath)){
+                Files.createFile(newFilePath);
+            }
             clientSocketChannel = SocketChannel.open();
             clientSocketChannel.configureBlocking(false);
             selector = Selector.open();
@@ -63,7 +69,6 @@ public class SocketClient {
         client.register(this.selector, SelectionKey.OP_READ);
     }
 
-
     private void read(SelectionKey key) {
         try {
             SocketChannel clientSocketChannel = (SocketChannel) key.channel();
@@ -76,7 +81,7 @@ public class SocketClient {
             } else {
                 byteBuffer.flip();
                 String msg = new String(byteBuffer.array(), byteBuffer.position(), byteBuffer.remaining());
-                writeToFile(msg,FILE_PATH);
+                writeToFile(msg, FILE_PATH);
                 System.out.println(msg);
                 byteBuffer.clear();
             }
@@ -98,7 +103,6 @@ public class SocketClient {
         }
     }
 
-
     public ByteBuffer readyToSend(String msg) throws Exception {
         byteBuffer.clear();
         byteBuffer.put(charset.encode(msg));
@@ -107,9 +111,9 @@ public class SocketClient {
         return byteBuffer;
     }
 
-    void write(String dateTime, String name, String msg){
+    void write(String dateTime, String name, String msg) {
         try {
-            byteBuffer=readyToSend(dateTime + " " + name + ": " + msg + "\r\n");
+            byteBuffer = readyToSend(dateTime + " " + name + ": " + msg + "\r\n");
             clientSocketChannel.write(byteBuffer);
             if (readyToQuit(msg)) {
                 clientSocketChannel.close();
