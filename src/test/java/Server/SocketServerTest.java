@@ -19,18 +19,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SocketServerTest {
     SocketServer serverSocket = new SocketServer(Config.HOST, Config.PORT);
-    String s="тест";
-    String path_name="test.txt";
-
-
-
+    String s = "тест";
+    String path_name = "test.txt";
 
     @Test
     void writeToFile() throws IOException {
         Path newFilePath = Paths.get(path_name);
         Files.deleteIfExists(newFilePath);
         Files.createFile(newFilePath);
-        assertTrue(serverSocket.writeToFile(s,path_name));
+        assertTrue(serverSocket.writeToFile(s, path_name));
     }
 
     @Test
